@@ -2,6 +2,7 @@
 using namespace std;
 
 class FormulaCar{
+friend class PitStop;
     protected:
         string teamName, driverName;
         float currentSpeed,fuelLevel,totalRaceTime,gapToLeader;  
@@ -47,11 +48,11 @@ class RedBull: public FormulaCar{
     public:
     RedBull(string driver):FormulaCar("RedBull",driver){}
 
-    float calculateAerodynamics() override{return aeroCoefficient *105.0;}
+    float calculateAerodynamics() {return aeroCoefficient *105.0;}
 
-    float enginePowerOutput() override{return 950.0;}
+    float enginePowerOutput() {return 950.0;}
 
-    void applyPerformanceTrait() override{currentSpeed=310+(calculateAerodynamics()*0.1);}   
+    void applyPerformanceTrait() {currentSpeed=310+(calculateAerodynamics()*0.1);}   
 };
 
 class Ferrari: public FormulaCar{
@@ -61,21 +62,21 @@ class Ferrari: public FormulaCar{
     public:
     Ferrari(string driver):FormulaCar("Ferrari",driver){}
 
-    float calculateAerodynamics() override{return  112.0;}
+    float calculateAerodynamics() {return  112.0;}
 
-    float enginePowerOutput() override{return 1300*reliablilityMultiplier;}
+    float enginePowerOutput() {return 1300*reliablilityMultiplier;}
 
-    void applyPerformanceTrait() override{currentSpeed=(enginePowerOutput())/3.0+10.0;}
+    void applyPerformanceTrait() {currentSpeed=(enginePowerOutput())/3.0+10.0;}
 };
 class Mercedes: public FormulaCar{
     public:
         Mercedes(string driver):FormulaCar("Mercedes",driver){}
 
-        float calculateAerodynamics() override{return 118.0;}
+        float calculateAerodynamics() {return 118.0;}
 
-        float enginePowerOutput() override{return 985.0;}
+        float enginePowerOutput() {return 985.0;}
 
-        void applyPerformanceTrait() override{
+        void applyPerformanceTrait() {
             currentSpeed=318.0;
             fuelLevel+=0.4;
         }
@@ -88,22 +89,22 @@ private:
 public:
     McLaren(string driver) : FormulaCar("McLaren", driver) {}
 
-    float calculateAerodynamics() override { return 120.0*downforceBoost;}
+    float calculateAerodynamics() { return 120.0*downforceBoost;}
 
-    float enginePowerOutput() override{ return 975.0;}
+    float enginePowerOutput() { return 975.0;}
 
-    void applyPerformanceTrait() override {currentSpeed=312.0+(calculateAerodynamics()* 0.08);}
+    void applyPerformanceTrait() {currentSpeed=312.0+(calculateAerodynamics()* 0.08);}
 };
 
 class Audi : public FormulaCar {
 public:
     Audi(string driver) : FormulaCar("Audi", driver) {}
 
-    float calculateAerodynamics() override { return 114.0;}
+    float calculateAerodynamics() { return 114.0;}
 
-    float enginePowerOutput() override {return 1005.0;}
+    float enginePowerOutput() {return 1005.0;}
 
-    void applyPerformanceTrait() override {
+    void applyPerformanceTrait() {
         currentSpeed = 316.0;
         if (carHealth < 95) carHealth += 1; 
     }

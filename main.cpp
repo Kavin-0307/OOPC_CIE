@@ -5,33 +5,30 @@ using namespace std;
 class FormulaCar;
 
 //  WeatherSystem — Static global environment
-class WeatherSystem{
+class WeatherSystem
+{
 public:
     static float trackTemperature;   // °C
     static float precipitationLevel; // 0.0 (dry) → 1.0 (heavy rain)
 
-    // Randomise small weather shifts each call
-    static void updateWeather(){
-        // Temperature drifts ±2 °C
-        float tempDelta = ((std::rand() % 41) - 20) / 10.0f; // –2.0 to +2.0
-        trackTemperature = std::max(15.0f, std::min(55.0f, trackTemperature + tempDelta));
+    void updateWeather(){
+        float tempDelta = ((rand() % 41) - 20) / 10.0f;
+        trackTemperature = max(15.0f, min(55.0f, trackTemperature + tempDelta));
 
-        // Precipitation drifts ±0.1
-        float rainDelta = ((std::rand() % 21) - 10) / 100.0f; // –0.10 to +0.10
-        precipitationLevel = std::max(0.0f, std::min(1.0f, precipitationLevel + rainDelta));
+        float rainDelta = ((rand() % 21) - 10) / 100.0f;
+        precipitationLevel = max(0.0f, min(1.0f, precipitationLevel + rainDelta));
 
-        std::cout << "[WeatherSystem] Temp: " << trackTemperature
-                  << " °C  |  Rain: " << precipitationLevel << "\n";
+        cout << "[WeatherSystem] Temp: " << trackTemperature
+             << " °C  |  Rain: " << precipitationLevel << "\n";
     }
 
-    static void printConditions(){
-        std::cout << "  Track Temp    : " << trackTemperature << " °C\n"
-                  << "  Precipitation : " << precipitationLevel << "\n";
+    void printConditions(){
+        cout << "  Track Temp    : " << trackTemperature << " °C\n"
+             << "  Precipitation : " << precipitationLevel << "\n";
     }
 };
 
-// Static member definitions
-float WeatherSystem::trackTemperature = 30.0f;
+float WeatherSystem::trackTemperature   = 30.0f;
 float WeatherSystem::precipitationLevel = 0.0f;
 
 //  SafetyCar — Simple state object
@@ -39,14 +36,14 @@ class SafetyCar{
 public:
     static bool isActive;
 
-    static void deploy(){
+    void deploy(){
         isActive = true;
-        std::cout << "[SafetyCar] ⚠  Safety Car DEPLOYED — overtaking suspended.\n";
+        cout << "[SafetyCar] ⚠  Safety Car DEPLOYED — overtaking suspended.\n";
     }
 
-    static void recall(){
+    void recall(){
         isActive = false;
-        std::cout << "[SafetyCar] ✅ Safety Car recalled — racing resumes.\n";
+        cout << "[SafetyCar] Safety Car recalled — racing resumes.\n";
     }
 };
 
@@ -55,119 +52,108 @@ bool SafetyCar::isActive = false;
 //  FormulaCar — Concrete race car
 class FormulaCar{
 private:
-    std::string driverName;
-    int position;    // Current grid position (1-based)
-    float speed;     // km/h
-    float baseSpeed; // Normal racing speed
-    static constexpr float SAFETY_CAR_SPEED_LIMIT = 120.0f; // km/h
+    string driverName;
+    int    position;
+    float  speed;
+    float  baseSpeed;
+    static constexpr float SAFETY_CAR_SPEED_LIMIT = 120.0f;
 
 public:
-    FormulaCar(const std::string &name, int startPos, float topSpeed)
+    FormulaCar(const string &name, int startPos, float topSpeed)
         : driverName(name), position(startPos),
           speed(topSpeed), baseSpeed(topSpeed) {}
 
-    // Called under Safety Car — clamp speed, no position change
     void limitSpeed(){
         speed = SAFETY_CAR_SPEED_LIMIT;
-        std::cout << "  [" << driverName << "] P" << position
-                  << " — speed limited to " << speed << " km/h (Safety Car)\n";
+        cout << "  [" << driverName << "] P" << position
+             << " — speed limited to " << speed << " km/h (Safety Car)\n";
     }
 
-    // Called during normal racing — adjust speed for weather, attempt overtake
     void updatePosition(){
-        // Weather degrades speed: rain reduces grip → lower top speed
-        float grip = 1.0f - (WeatherSystem::precipitationLevel * 0.4f);
+        float grip        = 1.0f - (WeatherSystem::precipitationLevel * 0.4f);
         float heatPenalty = (WeatherSystem::trackTemperature > 45.0f) ? 0.95f : 1.0f;
-        speed = baseSpeed * grip * heatPenalty;
+        speed             = baseSpeed * grip * heatPenalty;
 
-        // Small random position swap to simulate overtaking (simplified)
-        int delta = (std::rand() % 3) - 1; // –1, 0, or +1
-        position = std::max(1, position + delta);
+        int delta = (rand() % 3) - 1;
+        position  = max(1, position + delta);
 
-        std::cout << "  [" << driverName << "] P" << position
-                  << " — speed: " << speed << " km/h\n";
+        cout << "  [" << driverName << "] P" << position
+             << " — speed: " << speed << " km/h\n";
     }
 
-    // Getters
-    int getPosition() const { return position; }
-    std::string getDriverName() const { return driverName; }
-    float getSpeed() const { return speed; }
+    int    getPosition()   const { return position;   }
+    string getDriverName() const { return driverName; }
+    float  getSpeed()      const { return speed;      }
 
-    // Allow RaceTrack to sort the grid
-    static bool comparePositions(const FormulaCar *a, const FormulaCar *b){
-        return a->getPosition() < b->getPosition();
-    }
+    static bool comparePositions(const FormulaCar *a, const FormulaCar *b){ return a->getPosition() < b->getPosition();}
 };
 
 //  RaceOfficial — Issues decisions / penalties
-class RaceOfficial{
+class RaceOfficial
+{
 private:
-    std::string name;
+    string    name;
+    SafetyCar safetyCar; 
 
 public:
-    explicit RaceOfficial(const std::string &officialName) : name(officialName) {}
+    explicit RaceOfficial(const string &officialName) : name(officialName) {}
 
-    void issuePenalty(FormulaCar &car, const std::string &reason) const {
-        std::cout << "[Official: " << name << "] ⚑  Penalty issued to "
-                  << car.getDriverName() << " — Reason: " << reason << "\n";
+    void issuePenalty(FormulaCar &car, const string &reason) const{
+        cout << "[Official: " << name << "] ⚑  Penalty issued to "
+             << car.getDriverName() << " — Reason: " << reason << "\n";
     }
 
-    void deploySafetyCar() const {
-        std::cout << "[Official: " << name << "] Ordering Safety Car deployment.\n";
-        SafetyCar::deploy();
+    void deploySafetyCar(){
+        cout << "[Official: " << name << "] Ordering Safety Car deployment.\n";
+        safetyCar.deploy();  
     }
 
-    void recallSafetyCar() const {
-        std::cout << "[Official: " << name << "] Ordering Safety Car recall.\n";
-        SafetyCar::recall();
+    void recallSafetyCar(){
+        cout << "[Official: " << name << "] Ordering Safety Car recall.\n";
+        safetyCar.recall();  
     }
 };
 
 //  RaceTrack — Lap Logic controller
 class RaceTrack{
-private:
-    std::string trackName;
+    private:
+    string trackName;
     int totalLaps;
     int currentLap;
+    WeatherSystem weather;   
 
 public:
-    RaceTrack(const std::string &name, int laps)
+    RaceTrack(const string &name, int laps)
         : trackName(name), totalLaps(laps), currentLap(0) {}
 
-    // Core loop — iterates grid each lap
-    void lapLogic(std::vector<FormulaCar *> &grid){
+    void lapLogic(vector<FormulaCar *> &grid){
         ++currentLap;
-        std::cout << "\n══════════════════════════════════════\n";
-        std::cout << "  " << trackName
-                  << "  |  Lap " << currentLap << " / " << totalLaps << "\n";
-        std::cout << "══════════════════════════════════════\n";
+        cout << "\n══════════════════════════════════════\n";
+        cout << "  " << trackName
+             << "  |  Lap " << currentLap << " / " << totalLaps << "\n";
+        cout << "══════════════════════════════════════\n";
 
-        // Update global weather each lap
-        WeatherSystem::updateWeather();
-        WeatherSystem::printConditions();
-        std::cout << "--------------------------------------\n";
+        weather.updateWeather();   
+        weather.printConditions(); 
+        cout << "--------------------------------------\n";
 
         for (auto &car : grid){
-            if (SafetyCar::isActive){
-                car->limitSpeed(); // No overtaking allowed
-            }
-            else{
-                car->updatePosition(); // Normal racing
-            }
+            if (SafetyCar::isActive)
+                car->limitSpeed();
+            else
+                car->updatePosition();
         }
 
-        // Re-sort grid by position after normal racing
-        if (!SafetyCar::isActive){
-            std::sort(grid.begin(), grid.end(), FormulaCar::comparePositions);
-        }
+        if (!SafetyCar::isActive)
+            sort(grid.begin(), grid.end(), FormulaCar::comparePositions);
     }
 
-    void printGrid(const std::vector<FormulaCar *> &grid) const{
-        std::cout << "\n--- Current Grid ---\n";
+    void printGrid(const vector<FormulaCar *> &grid) const{
+        cout << "\n--- Current Grid ---\n";
         for (size_t i = 0; i < grid.size(); ++i){
-            std::cout << "  P" << (i + 1) << "  "
-                      << grid[i]->getDriverName()
-                      << "  (" << grid[i]->getSpeed() << " km/h)\n";
+            cout << "  P" << (i + 1) << "  "
+                 << grid[i]->getDriverName()
+                 << "  (" << grid[i]->getSpeed() << " km/h)\n";
         }
     }
 
