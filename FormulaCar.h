@@ -18,6 +18,7 @@ friend class PitStop;
             gapToLeader=0;
             tireAge=0;
             carHealth=100;
+            engine = InternalCombustionEngine(enginePower);
         }
         virtual ~FormulaCar() {}
 
@@ -39,6 +40,18 @@ friend class PitStop;
             fuelLevel-=2.2;
             tireAge+=1;
             carHealth-=(rand()%3);   //random value
+            engine.applyWear(2.5);
+            ers.applyWear(1.8);
+            gearbox.applyWear(1.2);
+            bool engineBlown = engine.checkComponentFailure();
+            bool ersFailed   = ers.checkComponentFailure();
+            bool gearFailed  = gearbox.checkComponentFailure();
+            if (engineBlown) {
+                currentSpeed = 0;
+            } else {
+                currentSpeed = currentSpeed * gearbox.getSpeedMultiplier();
+            }
+            ers.recharge(0.3);
         }
 };
 class RedBull: public FormulaCar{
