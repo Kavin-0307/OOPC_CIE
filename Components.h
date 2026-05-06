@@ -4,15 +4,14 @@
 #include <ctime>
 using namespace std;
 
-// Internal Combustion Engine Class
+//Internal Combustion Engine Class
 class InternalCombustionEngine {
 private:
-    // wear level and base power
+    //wear level and base power
     double wearLevel;
     double basePower;
 
 public:
-    // Constructor
     InternalCombustionEngine(double power = 1000.0)
         : wearLevel(0.0), basePower(power) {}
 
@@ -43,7 +42,7 @@ public:
     }
 };
 
-// Energy Recovery System
+//Energy Recovery System
 class ERS {
 private:
     double wearLevel;
@@ -61,7 +60,7 @@ public:
     // To get current wear level
     double getWearLevel() const { return wearLevel; }
 
-    // Deploying boost
+    //Deploying boost
     double deployBoost() {
         if (storedEnergy <= 0) return 0.0;
         double boost = 160.0 * (storedEnergy / maxEnergy);
@@ -81,14 +80,14 @@ public:
         return roll < failureProb;
     }
 
-    // Displaying current level
+    //Displaying current level
     void display() const {
         cout << "  [ERS] Energy: " << storedEnergy << " MJ"
              << " | Wear: " << wearLevel << "%" << endl;
     }
 };
 
-// Transmission
+//Transmission class
 class Transmission {
 private:
     double wearLevel;
@@ -105,7 +104,7 @@ public:
     // To get current wear level
     double getWearLevel() const { return wearLevel; }
 
-    // To check if transmission has failed
+    //To check if transmission has failed
     bool hasFailed() const { return failed; }
 
     // Speed is capped at 50% is transmission fails
@@ -113,7 +112,7 @@ public:
         return failed ? 0.5 : 1.0;
     }
 
-    // Check if components failed
+    //Check if components failed
     bool checkComponentFailure() {
         if (failed) return true;
         double failureProb = (wearLevel / 100.0) * 0.5;
@@ -125,7 +124,7 @@ public:
         return failed;
     }
 
-    // Display data
+    //Display data
     void display() const {
         cout << "  [Gearbox] Wear: " << wearLevel << "%"
              << " | Status: " << (failed ? "FAILED" : "OK") << endl;
