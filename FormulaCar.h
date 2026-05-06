@@ -1,19 +1,12 @@
-#include<iostream>
-#include<vector>
-#include<string>
-
+#include<bits/stdc++.h>
 using namespace std;
+
 class FormulaCar{
     protected:
-        string teamName;
-        string driverName;
-        float currentSpeed;
-        float fuelLevel;
-        float totalRaceTime;
+        string teamName, driverName;
+        float currentSpeed,fuelLevel,totalRaceTime,gapToLeader;  
+        int tireAge,carHealth;
 
-        float gapToLeader;
-        int tireAge;
-        int carHealth;
     public:
         FormulaCar(string team,string driver){
             teamName=team;
@@ -26,7 +19,6 @@ class FormulaCar{
             carHealth=100;
         }
         virtual ~FormulaCar() {}
-
 
         void setGap(float gap){
             gapToLeader=gap;
@@ -45,7 +37,7 @@ class FormulaCar{
             totalRaceTime+=lapTime;
             fuelLevel-=2.2;
             tireAge+=1;
-            carHealth-=(rand()%3);//random value
+            carHealth-=(rand()%3);   //random value
         }
 };
 class RedBull: public FormulaCar{
@@ -107,7 +99,6 @@ public:
         return 975.0;
     }
     void applyPerformanceTrait() override {
-        
         currentSpeed=312.0+(calculateAerodynamics()* 0.08);
     }
 };
