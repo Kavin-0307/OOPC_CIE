@@ -2,6 +2,7 @@
 using namespace std;
 
 class FormulaCar{
+friend class PitStop;
     protected:
         string teamName, driverName;
         float currentSpeed,fuelLevel,totalRaceTime,gapToLeader;  
