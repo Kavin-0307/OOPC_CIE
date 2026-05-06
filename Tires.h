@@ -19,6 +19,7 @@ public:
 
     // Method to handle per lap tire grip degradation
     virtual void degradePerLap() = 0; 
+    virtual string getCompoundName() = 0;
 };
 
 class SoftCompound : public Tire {
@@ -28,6 +29,9 @@ public:
 
     float getGripLevel() {
         return gripLevel;
+    }
+   string getCompoundName() override { 
+        return "SOFT"; 
     }
 
     void degradePerLap() {
@@ -44,6 +48,9 @@ public:
     float getGripLevel() {
         return gripLevel;
     }
+    string getCompoundName() override { 
+        return "MEDIUM"; 
+    }
 
     void degradePerLap() {
         gripLevel -= 3.0f; 
@@ -59,6 +66,9 @@ public:
     float getGripLevel() {
         return gripLevel;
     }
+   string getCompoundName() override { 
+        return "HARD"; 
+    }
 
     void degradePerLap() {
         // only loses 1% every lap
@@ -73,6 +83,9 @@ public:
 
     float getGripLevel() {
         return gripLevel;
+    }
+   string getCompoundName() override { 
+        return "WET"; 
     }
 
     void degradePerLap() {
