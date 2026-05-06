@@ -31,12 +31,11 @@ class FormulaCar{
         void setGap(float gap){
             gapToLeader=gap;
         }
-        string getDriverName(){return driverName;}
-        string getTeam(){return teamName;}
-        float getGap(){return gapToLeader;}
-        int getTireAge(){return tireAge;}
-        int getHealth(){return carHealth;}
-        float getTotalTime(){return totalRaceTime;}
+        string getDriverName()const{return driverName;}
+        string getTeam()const {return teamName;}
+        int getTireAge()const {return tireAge;}
+        int getHealth()const{return carHealth;}
+        float getTotalTime()const{return totalRaceTime;}
 
         virtual float calculateAerodynamics()=0;
         virtual float enginePowerOutput()=0;
