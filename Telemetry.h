@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <fstream>
 #include <algorithm>
+#pragma once
 #include "FormulaCar.h"
 
 

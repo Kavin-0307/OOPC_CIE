@@ -1,161 +1,147 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <thread>
+#include <chrono>
+
+#include "Components.h"
+#include "Tires.h"
+#include "FormulaCar.h"
+#include "Telemetry.h"
+
 using namespace std;
 
-//  Forward declaration
-class FormulaCar;
-
-//  WeatherSystem — Static global environment
-class WeatherSystem
-{
+class PitStop {
 public:
-    static float trackTemperature;   // °C
-    static float precipitationLevel; // 0.0 (dry) → 1.0 (heavy rain)
+    void performPitStop(FormulaCar& car, Tire* newTire) {
+        if (car.currentTire != nullptr) {
+            delete car.currentTire; 
+        }
+        car.currentTire = newTire; 
+        car.totalRaceTime += 25.0f; 
+    }
+};
 
-    void updateWeather(){
+class WeatherSystem {
+public:
+    static float trackTemperature;
+    static float precipitationLevel;
+
+    static void updateWeather() {
         float tempDelta = ((rand() % 41) - 20) / 10.0f;
         trackTemperature = max(15.0f, min(55.0f, trackTemperature + tempDelta));
 
         float rainDelta = ((rand() % 21) - 10) / 100.0f;
         precipitationLevel = max(0.0f, min(1.0f, precipitationLevel + rainDelta));
-
-        cout << "[WeatherSystem] Temp: " << trackTemperature
-             << " °C  |  Rain: " << precipitationLevel << "\n";
-    }
-
-    void printConditions(){
-        cout << "  Track Temp    : " << trackTemperature << " °C\n"
-             << "  Precipitation : " << precipitationLevel << "\n";
     }
 };
 
-float WeatherSystem::trackTemperature   = 30.0f;
+float WeatherSystem::trackTemperature = 30.0f;
 float WeatherSystem::precipitationLevel = 0.0f;
 
-//  SafetyCar — Simple state object
-class SafetyCar{
+class SafetyCar {
 public:
     static bool isActive;
-
-    void deploy(){
-        isActive = true;
-        cout << "[SafetyCar] ⚠  Safety Car DEPLOYED — overtaking suspended.\n";
-    }
-
-    void recall(){
-        isActive = false;
-        cout << "[SafetyCar] Safety Car recalled — racing resumes.\n";
-    }
+    static void deploy() { isActive = true; }
+    static void recall() { isActive = false; }
 };
-
 bool SafetyCar::isActive = false;
 
-//  FormulaCar — Concrete race car
-class FormulaCar{
-private:
-    string driverName;
-    int    position;
-    float  speed;
-    float  baseSpeed;
-    static constexpr float SAFETY_CAR_SPEED_LIMIT = 120.0f;
+// --- HELPER FUNCTION TO SORT CARS ---
+bool compareTotalTime(const FormulaCar* a, const FormulaCar* b) {
+    return a->getTotalTime() < b->getTotalTime();
+}
 
-public:
-    FormulaCar(const string &name, int startPos, float topSpeed)
-        : driverName(name), position(startPos),
-          speed(topSpeed), baseSpeed(topSpeed) {}
 
-    void limitSpeed(){
-        speed = SAFETY_CAR_SPEED_LIMIT;
-        cout << "  [" << driverName << "] P" << position
-             << " — speed limited to " << speed << " km/h (Safety Car)\n";
+int main() {
+    srand(time(0));
+
+    Telemetry ui;
+
+    //Initialize the Grid (Polymorphism)
+    vector<FormulaCar*> grid;
+    grid.push_back(new RedBull("Max Verstappen"));
+    grid.push_back(new Ferrari("Charles Leclerc"));
+    grid.push_back(new Mercedes("Lewis Hamilton"));
+    grid.push_back(new McLaren("Lando Norris"));
+    grid.push_back(new Audi("Carlos Sainz"));
+
+    // Equip starting tires
+    for (auto car : grid) {
+        car->currentTire = new SoftCompound();
     }
 
-    void updatePosition(){
-        float grip        = 1.0f - (WeatherSystem::precipitationLevel * 0.4f);
-        float heatPenalty = (WeatherSystem::trackTemperature > 45.0f) ? 0.95f : 1.0f;
-        speed             = baseSpeed * grip * heatPenalty;
+    int totalLaps = 5;
+    PitStop pitCrew;
 
-        int delta = (rand() % 3) - 1;
-        position  = max(1, position + delta);
+    // The Race Loop
+    for (int lap = 1; lap <= totalLaps; lap++) {
+        WeatherSystem::updateWeather();
+        
+        // Random chance for safety car
+        if (rand() % 10 == 0) SafetyCar::deploy();
+        else SafetyCar::recall();
 
-        cout << "  [" << driverName << "] P" << position
-             << " — speed: " << speed << " km/h\n";
-    }
-
-    int    getPosition()   const { return position;   }
-    string getDriverName() const { return driverName; }
-    float  getSpeed()      const { return speed;      }
-
-    static bool comparePositions(const FormulaCar *a, const FormulaCar *b){ return a->getPosition() < b->getPosition();}
-};
-
-//  RaceOfficial — Issues decisions / penalties
-class RaceOfficial
-{
-private:
-    string    name;
-    SafetyCar safetyCar; 
-
-public:
-    explicit RaceOfficial(const string &officialName) : name(officialName) {}
-
-    void issuePenalty(FormulaCar &car, const string &reason) const{
-        cout << "[Official: " << name << "] ⚑  Penalty issued to "
-             << car.getDriverName() << " — Reason: " << reason << "\n";
-    }
-
-    void deploySafetyCar(){
-        cout << "[Official: " << name << "] Ordering Safety Car deployment.\n";
-        safetyCar.deploy();  
-    }
-
-    void recallSafetyCar(){
-        cout << "[Official: " << name << "] Ordering Safety Car recall.\n";
-        safetyCar.recall();  
-    }
-};
-
-//  RaceTrack — Lap Logic controller
-class RaceTrack{
-    private:
-    string trackName;
-    int totalLaps;
-    int currentLap;
-    WeatherSystem weather;   
-
-public:
-    RaceTrack(const string &name, int laps)
-        : trackName(name), totalLaps(laps), currentLap(0) {}
-
-    void lapLogic(vector<FormulaCar *> &grid){
-        ++currentLap;
-        cout << "\n══════════════════════════════════════\n";
-        cout << "  " << trackName
-             << "  |  Lap " << currentLap << " / " << totalLaps << "\n";
-        cout << "══════════════════════════════════════\n";
-
-        weather.updateWeather();   
-        weather.printConditions(); 
-        cout << "--------------------------------------\n";
-
-        for (auto &car : grid){
-            if (SafetyCar::isActive)
-                car->limitSpeed();
-            else
-                car->updatePosition();
+        if (SafetyCar::isActive) {
+            ui.addCommentary("SAFETY CAR DEPLOYED! Speed limited.");
+        } else if (WeatherSystem::precipitationLevel > 0.5) {
+            ui.addCommentary("Heavy rain reported on track!");
         }
 
-        if (!SafetyCar::isActive)
-            sort(grid.begin(), grid.end(), FormulaCar::comparePositions);
-    }
+        // Simulate Lap for each car
+        for (auto car : grid) {
+            // Apply car specific traits
+            car->applyPerformanceTrait();
+            
+            // Calculate base lap time 
+            float baseLapTime = 90.0f;
+            float speedBonus = car->enginePowerOutput() / 100.0f;
+            float aeroBonus = car->calculateAerodynamics() / 50.0f;
+            
+            float lapTime = baseLapTime - speedBonus - aeroBonus;
 
-    void printGrid(const vector<FormulaCar *> &grid) const{
-        cout << "\n--- Current Grid ---\n";
-        for (size_t i = 0; i < grid.size(); ++i){
-            cout << "  P" << (i + 1) << "  "
-                 << grid[i]->getDriverName()
-                 << "  (" << grid[i]->getSpeed() << " km/h)\n";
+            // Apply weather and safety car penalties
+            if (SafetyCar::isActive) lapTime += 20.0f; 
+            lapTime += (WeatherSystem::precipitationLevel * 15.0f); // Rain slows them down
+
+            // Update car status (Fuel, wear, health)
+            car->updateRaceStatus(lapTime);
+            
+            // Tire wear logic
+            if (car->currentTire) {
+                car->currentTire->degradePerLap();
+                // Pitstop trigger if grip is too low
+                if (car->currentTire->getGripLevel() < 30.0f) {
+                    ui.addCommentary(car->getDriverName() + " is BOXING for new Hard tires!");
+                    pitCrew.performPitStop(*car, new HardCompound());
+                }
+            }
         }
+
+        // Sort grid by who has the lowest total race time 
+        sort(grid.begin(), grid.end(), compareTotalTime);
+
+        // Calculate Gaps
+        float leaderTime = grid[0]->getTotalTime();
+        for (auto car : grid) {
+            car->setGap(car->getTotalTime() - leaderTime);
+        }
+
+        // Render the Dashboard
+        ui.renderDashboard(lap, totalLaps, grid);
+        this_thread::sleep_for(chrono::milliseconds(1500));
     }
 
-    bool isRaceOver() const { return currentLap >= totalLaps; }
-};
+    //Archive Results & Cleanup
+    ui.addCommentary("CHEQUERED FLAG! " + grid[0]->getDriverName() + " WINS!");
+    ui.renderDashboard(totalLaps, totalLaps, grid); // Final render
+    
+    ui.archiveResults(grid);
+
+    // Free memory
+    for (auto car : grid) {
+        delete car;
+    }
+
+    return 0;
+}

@@ -1,4 +1,7 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
+#pragma once
+#include "Components.h" 
+#include "Tires.h"      
 using namespace std;
 
 class FormulaCar{
@@ -7,8 +10,12 @@ friend class PitStop;
         string teamName, driverName;
         float currentSpeed,fuelLevel,totalRaceTime,gapToLeader;  
         int tireAge,carHealth;
+        InternalCombustionEngine engine;
+        ERS ers;
+        Transmission gearbox;
 
     public:
+     Tire* currentTire = nullptr;
         FormulaCar(string team,string driver){
             teamName=team;
             driverName=driver;
@@ -18,13 +25,15 @@ friend class PitStop;
             gapToLeader=0;
             tireAge=0;
             carHealth=100;
-            engine = InternalCombustionEngine(enginePower);
+            
         }
-        virtual ~FormulaCar() {}
+        virtual ~FormulaCar() {
+            if (currentTire != nullptr) delete currentTire;
+        }
 
-        void setGap(float gap){
-            gapToLeader=gap;
-        }
+        void setGap(float gap){ gapToLeader=gap; }
+        float getGap() const { return gapToLeader; } 
+
         string getDriverName()const{return driverName;}
         string getTeam()const {return teamName;}
         int getTireAge()const {return tireAge;}

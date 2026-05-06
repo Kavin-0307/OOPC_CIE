@@ -1,4 +1,5 @@
 #include <iostream>
+#pragma once
 
 using namespace std;
 
@@ -91,21 +92,6 @@ public:
     void degradePerLap() {
         gripLevel -= 2.0f;
         if (gripLevel < 0.0f) gripLevel = 0.0f;
-    }
-};
-
-class PitStop {
-public:
-    // Swap Tire Object
-    void performPitStop(FormulaCar& car, Tire* newTire) {
-        if (car.currentTire != nullptr) {
-            delete car.currentTire; // Free the old tire memory
-        }
-        
-        car.currentTire = newTire; // Swap to the new tire
-        
-        // adding 25 seconds to the car's total time taken during Pitstop
-        car.totalRaceTime += 25.0f; 
     }
 };
 
